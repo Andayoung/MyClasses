@@ -1,6 +1,7 @@
-package com.gg.classlist.view;
+package com.gg.classlist.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -54,8 +55,13 @@ public class ClassesAdapter extends BaseAdapter {
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
+        if (position % 2 == 0) {
+            convertView.setBackgroundColor(Color.parseColor("#B3FFFFFF"));
+        } else {
+            convertView.setBackgroundColor(Color.parseColor("#B3FAFAFA"));
+        }
         //{"id":"b576d878f7244df2933f8b97de5debda","endtime":"11:00","starttime":"09:00","page":1,"name":"语文课","serialnumber":"11","week":1,"rows":10},
-        String startT=mapList.get(position).get("starttime")+" -";
+        String startT=mapList.get(position).get("starttime");
         String endT=mapList.get(position).get("endtime");
         String classN=mapList.get(position).get("name");
         Log.e("ClassesAdapter","startT="+startT+",endT="+endT+",classN="+classN);

@@ -9,13 +9,11 @@ import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.widget.TextView;
 
 import com.gg.classlist.R;
 import com.gg.classlist.adapter.ClassPagerAdapter;
 import com.gg.classlist.db.DBManager;
 import com.gg.classlist.util.Classes;
-import com.gg.classlist.util.SerialNumberHelper;
 import com.tencent.android.tpush.XGIOperateCallback;
 import com.tencent.android.tpush.XGPushClickedResult;
 import com.tencent.android.tpush.XGPushConfig;
@@ -52,14 +50,17 @@ public class MainActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         registerMessageReceiver();
+        mgr = new DBManager(this);
         SerialNumberHelper serialNumberHelper = new SerialNumberHelper(this);
         String serialNumber = serialNumberHelper.read4File();
         if (serialNumber == null || serialNumber.equals("")) {
             //未登录，转向登录界面
             Log.e("MainActivity","未登录");
-            Intent intent = new Intent("intent.action.loginZ");
+          /*  Intent intent = new Intent("intent.action.loginZ");
             intent.putExtra("appName","myclass");
-            startActivity(intent);
+            startActivityForResult(intent,0);*/
+            Intent intent=new Intent(MainActivity.this,LogOrRegActivity.class);
+            startActivityForResult(intent,0);
         } else {
             //登录，用serialNumber注册并绑定信鸽推送
             Context context = getApplicationContext();
@@ -75,13 +76,12 @@ public class MainActivity extends BaseActivity {
                 }
             });
         }
-        mgr = new DBManager(this);
-
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+
         XGPushClickedResult clickedResult = XGPushManager.onActivityStarted(this);
         if (clickedResult != null) {
             String title = clickedResult.getTitle();
@@ -90,6 +90,20 @@ public class MainActivity extends BaseActivity {
             Log.e("TPush", "id:" + id);
             String content = clickedResult.getContent();
             Log.e("TPush", "content:" + content);
+        }
+
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.e("MainActivity","onActivityResult,requestCode="+requestCode+",result="+resultCode);
+        if(requestCode==0&&resultCode==0&&data!=null){
+            Log.e("MainActivity","data="+data);
+            if(data.getStringExtra("isDl").equals("0")){
+                Log.e("MainActivity","data="+data.getStringExtra("isDl"));
+                finish();
+            }else if(data.getStringExtra("isDl").equals("1")){
+                Log.e("MainActivity","data="+data.getStringExtra("isDl"));
+            }
         }
 
     }

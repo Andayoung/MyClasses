@@ -5,9 +5,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
 import com.gg.classlist.R;
+import com.gg.classlist.adapter.ClassesAdapter;
 import com.gg.classlist.db.DBManager;
 import com.gg.classlist.util.Classes;
 
