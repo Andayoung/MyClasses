@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -23,10 +24,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
+
+import static android.os.Environment.DIRECTORY_DOCUMENTS;
 
 
 public class MainActivity extends BaseActivity {
@@ -55,12 +59,9 @@ public class MainActivity extends BaseActivity {
         String serialNumber = serialNumberHelper.read4File();
         if (serialNumber == null || serialNumber.equals("")) {
             //未登录，转向登录界面
-            Log.e("MainActivity","未登录");
-          /*  Intent intent = new Intent("intent.action.loginZ");
-            intent.putExtra("appName","myclass");
-            startActivityForResult(intent,0);*/
-            Intent intent=new Intent(MainActivity.this,LogOrRegActivity.class);
-            startActivityForResult(intent,0);
+            Log.e("MainActivity", "未登录");
+            Intent intent = new Intent(MainActivity.this, LogOrRegActivity.class);
+            startActivityForResult(intent, 0);
         } else {
             //登录，用serialNumber注册并绑定信鸽推送
             Context context = getApplicationContext();
@@ -70,6 +71,7 @@ public class MainActivity extends BaseActivity {
                 public void onSuccess(Object data, int flag) {
                     Log.e("TPush", "注册成功,Token值为：" + data);
                 }
+
                 @Override
                 public void onFail(Object data, int errCode, String msg) {
                     Log.e("TPush", "注册失败,错误码为：" + errCode + ",错误信息：" + msg);
@@ -93,16 +95,17 @@ public class MainActivity extends BaseActivity {
         }
 
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.e("MainActivity","onActivityResult,requestCode="+requestCode+",result="+resultCode);
-        if(requestCode==0&&resultCode==0&&data!=null){
-            Log.e("MainActivity","data="+data);
-            if(data.getStringExtra("isDl").equals("0")){
-                Log.e("MainActivity","data="+data.getStringExtra("isDl"));
+        Log.e("MainActivity", "onActivityResult,requestCode=" + requestCode + ",result=" + resultCode);
+        if (requestCode == 0 && resultCode == 0 && data != null) {
+            Log.e("MainActivity", "data=" + data);
+            if (data.getStringExtra("isDl").equals("0")) {
+                Log.e("MainActivity", "data=" + data.getStringExtra("isDl"));
                 finish();
-            }else if(data.getStringExtra("isDl").equals("1")){
-                Log.e("MainActivity","data="+data.getStringExtra("isDl"));
+            } else if (data.getStringExtra("isDl").equals("1")) {
+                Log.e("MainActivity", "data=" + data.getStringExtra("isDl"));
             }
         }
 
@@ -118,11 +121,11 @@ public class MainActivity extends BaseActivity {
     protected void initAllMembersView(Bundle savedInstanceState) {
         tabs.setTabMode(TabLayout.MODE_SCROLLABLE);
         for (int j = 0; j < 7; j++) {
-            ClassesView v = new ClassesView(this,String.valueOf(j));
+            ClassesView v = new ClassesView(this, String.valueOf(j));
             mViewList.add(v);
             tabs.addTab(tabs.newTab().setText(weeks[j]));
         }
-        mAdapter = new ClassPagerAdapter(mViewList,weeks);
+        mAdapter = new ClassPagerAdapter(mViewList, weeks);
         vpView.setAdapter(mAdapter);
         tabs.setupWithViewPager(vpView);
         tabs.setTabsFromPagerAdapter(mAdapter);
@@ -142,23 +145,24 @@ public class MainActivity extends BaseActivity {
             if (arg1.getAction().equals(ACTION_INTENT_RECEIVER)) {
                 String content = arg1.getStringExtra("customContent");
                 Log.e("onReceive", "content=" + content);
-                List<Classes> classList=new ArrayList<>();
                 try {
-                    JSONObject jList=new JSONObject(content);
-                    JSONArray classAll = jList.getJSONArray("list");
-                    for (int i = 0; i < classAll.length(); i++) {
-                        JSONObject classPer = classAll.getJSONObject(i);
-                        Classes c=new Classes(classPer.getString("starttime"),classPer.getString("endtime")
-                                ,classPer.getString("name"),classPer.getString("week"));
-                        classList.add(c);
-                        Log.e("MainActivity","starttime"+classPer.getString("starttime")+classPer.getString("endtime")
-                                +classPer.getString("name")+classPer.getString("week"));
+                    JSONObject jClass = new JSONObject(content);
+                    String type = jClass.getString("type");
+                    JSONObject model = jClass.getJSONObject("model");
+                    Classes c = new Classes(model.getString("id"),model.getString("starttime"), model.getString("endtime")
+                            , model.getString("name"), model.getString("week"));
+                    if(type.equals("0")){
+                        mgr.deleteForId(model.getString("id"));
+                    }else if(type.equals("1")){
+                        mgr.addForId(c);
+                    }else if(type.equals("2")){
+                        mgr.deleteForId(model.getString("id"));
+                        mgr.addForId(c);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                mgr.deleteAll();
-                mgr.addAll(classList);
+
                 for (int j = 0; j < 7; j++) {
                     mViewList.get(j).updateView(MainActivity.this);
                 }

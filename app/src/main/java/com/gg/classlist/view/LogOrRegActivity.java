@@ -67,10 +67,6 @@ public class LogOrRegActivity extends Activity {
         setContentView(R.layout.activity_reg_log);
         ButterKnife.bind(this);
 
-        Intent intent = getIntent();
-        if (intent != null && intent.getStringExtra("appName") != null) {
-            whichApp = intent.getStringExtra("appName");
-        }
 //        serialNumberHelper.makeDir();
 //        serialNumberHelper.save2File("1234567890");
 //        Log.e("LogOrRegActivity","num="+serialNumberHelper.read4File());

@@ -24,26 +24,52 @@ public class DBManager {
     public void addAll(List<Classes> classes) {
         SQLiteDatabase db = helper.getWritableDatabase();
         for (Classes classz : classes) {
-            db.execSQL("INSERT INTO myclass VALUES(null,?,?,?,?)", new Object[]{classz.starttime, classz.endtime, classz.name, classz.week});
+            db.execSQL("INSERT INTO myclass VALUES(null,?,?,?,?,?)", new Object[]{classz.classid, classz.starttime, classz.endtime, classz.name, classz.week});
         }
         Log.e("DBManager", "添加成功");
         db.close();
 
     }
 
-
-    public void deleteAll() {
+    public void addForId(Classes classes) {
         SQLiteDatabase db = helper.getWritableDatabase();
-        db.execSQL("delete from myclass");
+        db.execSQL("INSERT INTO myclass VALUES(null,?,?,?,?,?)", new Object[]{classes.classid, classes.starttime, classes.endtime, classes.name, classes.week});
+        Log.e("DBManager", "添加成功");
+        db.close();
+
+    }
+
+
+    public void deleteForId(String classid) {
+        SQLiteDatabase db = helper.getWritableDatabase();
+        db.delete("myclass", "classid=?", new String[]{classid});
         Log.e("DBManager", "删除成功");
     }
 
-    public List<Classes> queryForWeek(String week){
+
+    public List<Classes> queryForId(String classid) {
         ArrayList<Classes> classes = new ArrayList<Classes>();
         SQLiteDatabase db = helper.getWritableDatabase();
-        Cursor c = db.query("myclass",null,"week=?",new String[]{week},null,null,"starttime  DESC",null);
+        Cursor c = db.query("myclass", null, "classid=?", new String[]{classid}, null, null, null, null);
         while (c.moveToNext()) {
-            Classes classez = new Classes(c.getString(c.getColumnIndex("starttime"))
+            Classes classez = new Classes(c.getString(c.getColumnIndex("classid"))
+                    , c.getString(c.getColumnIndex("starttime"))
+                    , c.getString(c.getColumnIndex("endtime"))
+                    , c.getString(c.getColumnIndex("name"))
+                    , c.getString(c.getColumnIndex("week")));
+            classes.add(classez);
+        }
+        c.close();
+        return classes;
+    }
+
+    public List<Classes> queryForWeek(String week) {
+        ArrayList<Classes> classes = new ArrayList<Classes>();
+        SQLiteDatabase db = helper.getWritableDatabase();
+        Cursor c = db.query("myclass", null, "week=?", new String[]{week}, null, null, "starttime  ASC", null);
+        while (c.moveToNext()) {
+            Classes classez = new Classes(c.getString(c.getColumnIndex("classid"))
+                    , c.getString(c.getColumnIndex("starttime"))
                     , c.getString(c.getColumnIndex("endtime"))
                     , c.getString(c.getColumnIndex("name"))
                     , c.getString(c.getColumnIndex("week")));
@@ -58,7 +84,8 @@ public class DBManager {
         SQLiteDatabase db = helper.getWritableDatabase();
         Cursor c = db.rawQuery("SELECT * FROM myclass", null);
         while (c.moveToNext()) {
-            Classes classez = new Classes(c.getString(c.getColumnIndex("starttime"))
+            Classes classez = new Classes(c.getString(c.getColumnIndex("classid"))
+                    , c.getString(c.getColumnIndex("starttime"))
                     , c.getString(c.getColumnIndex("endtime"))
                     , c.getString(c.getColumnIndex("name"))
                     , c.getString(c.getColumnIndex("week")));

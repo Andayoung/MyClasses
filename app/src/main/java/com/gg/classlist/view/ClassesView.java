@@ -33,7 +33,7 @@ public class ClassesView extends RelativeLayout{
         listView=(ListView) findViewById(R.id.ls_classes);
         mapList=new ArrayList<>();
         mgr = new DBManager(context);
-        List<Classes> cz=mgr.queryForWeek(week);
+        List<Classes> cz=mgr.queryForWeek(String.valueOf(Integer.valueOf(week)+1));
         Log.e("ClassesView","size="+cz.size());
         for(int i=0;i<cz.size();i++){
             Map<String,String> zp=new HashMap<>();
@@ -53,7 +53,7 @@ public class ClassesView extends RelativeLayout{
         List<Map<String, String>>  listZ=new ArrayList<>();
         listZ.clear();
         mgr = new DBManager(context);
-        List<Classes> cz=mgr.queryForWeek(week);
+        List<Classes> cz=mgr.queryForWeek(String.valueOf(Integer.valueOf(week)+1));
         Log.e("ClassesView","size="+cz.size());
         for(int i=0;i<cz.size();i++){
             Map<String,String> zp=new HashMap<>();

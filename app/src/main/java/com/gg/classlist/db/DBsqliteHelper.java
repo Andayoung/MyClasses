@@ -20,7 +20,7 @@ public class DBsqliteHelper extends SQLiteOpenHelper {
 
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE IF NOT EXISTS myclass" +
-                "(_id INTEGER PRIMARY KEY AUTOINCREMENT, starttime VARCHAR, endtime VARCHAR, name VARCHAR, week VARCHAR)");
+                "(_id INTEGER PRIMARY KEY AUTOINCREMENT, classid VARCHAR, starttime VARCHAR, endtime VARCHAR, name VARCHAR, week VARCHAR)");
 
     }
 
