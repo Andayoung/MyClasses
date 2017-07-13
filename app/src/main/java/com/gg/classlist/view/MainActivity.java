@@ -142,26 +142,7 @@ public class MainActivity extends BaseActivity {
     public class MyBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context arg0, Intent arg1) {
-            if (arg1.getAction().equals(ACTION_INTENT_RECEIVER)) {
-                String content = arg1.getStringExtra("customContent");
-                Log.e("onReceive", "content=" + content);
-                try {
-                    JSONObject jClass = new JSONObject(content);
-                    String type = jClass.getString("type");
-                    JSONObject model = jClass.getJSONObject("model");
-                    Classes c = new Classes(model.getString("id"),model.getString("starttime"), model.getString("endtime")
-                            , model.getString("name"), model.getString("week"));
-                    if(type.equals("0")){
-                        mgr.deleteForId(model.getString("id"));
-                    }else if(type.equals("1")){
-                        mgr.addForId(c);
-                    }else if(type.equals("2")){
-                        mgr.deleteForId(model.getString("id"));
-                        mgr.addForId(c);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+            if (arg1.getAction().equals(MainActivity.ACTION_INTENT_RECEIVER)) {
 
                 for (int j = 0; j < 7; j++) {
                     mViewList.get(j).updateView(MainActivity.this);
