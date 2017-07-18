@@ -38,7 +38,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".view.LogOrRegActivity"/>
 
         <!-- 【必须】 信鸽receiver广播接收 -->
         <receiver android:name="com.tencent.android.tpush.XGPushReceiver"

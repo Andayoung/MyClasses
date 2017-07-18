@@ -2,16 +2,20 @@ package com.gg.classlist.view;
 
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
 import com.gg.classlist.R;
+import com.gg.classlist.SerialNumberHelper;
 import com.gg.classlist.adapter.ClassPagerAdapter;
 import com.gg.classlist.db.DBManager;
 import com.gg.classlist.util.Classes;
@@ -27,6 +31,8 @@ import org.json.JSONObject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import butterknife.BindView;
 
@@ -55,18 +61,24 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         registerMessageReceiver();
         mgr = new DBManager(this);
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         SerialNumberHelper serialNumberHelper = new SerialNumberHelper(this);
         String serialNumber = serialNumberHelper.read4File();
         if (serialNumber == null || serialNumber.equals("")) {
             //未登录，转向登录界面
             Log.e("MainActivity", "未登录");
-            Intent intent = new Intent(MainActivity.this, LogOrRegActivity.class);
-            startActivityForResult(intent, 0);
+            showDialog();
         } else {
+            String[] s = serialNumber.split(" ");
             //登录，用serialNumber注册并绑定信鸽推送
             Context context = getApplicationContext();
             XGPushConfig.enableDebug(context, true);
-            XGPushManager.registerPush(context, serialNumberHelper.read4File(), new XGIOperateCallback() {
+            XGPushManager.registerPush(context, s[0], new XGIOperateCallback() {
                 @Override
                 public void onSuccess(Object data, int flag) {
                     Log.e("TPush", "注册成功,Token值为：" + data);
@@ -77,39 +89,53 @@ public class MainActivity extends BaseActivity {
                     Log.e("TPush", "注册失败,错误码为：" + errCode + ",错误信息：" + msg);
                 }
             });
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        XGPushClickedResult clickedResult = XGPushManager.onActivityStarted(this);
-        if (clickedResult != null) {
-            String title = clickedResult.getTitle();
-            Log.e("TPush", "title:" + title);
-            String id = clickedResult.getMsgId() + "";
-            Log.e("TPush", "id:" + id);
-            String content = clickedResult.getContent();
-            Log.e("TPush", "content:" + content);
-        }
-
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.e("MainActivity", "onActivityResult,requestCode=" + requestCode + ",result=" + resultCode);
-        if (requestCode == 0 && resultCode == 0 && data != null) {
-            Log.e("MainActivity", "data=" + data);
-            if (data.getStringExtra("isDl").equals("0")) {
-                Log.e("MainActivity", "data=" + data.getStringExtra("isDl"));
-                finish();
-            } else if (data.getStringExtra("isDl").equals("1")) {
-                Log.e("MainActivity", "data=" + data.getStringExtra("isDl"));
+            XGPushClickedResult clickedResult = XGPushManager.onActivityStarted(this);
+            if (clickedResult != null) {
+                String title = clickedResult.getTitle();
+                Log.e("TPush", "title:" + title);
+                String id = clickedResult.getMsgId() + "";
+                Log.e("TPush", "id:" + id);
+                String content = clickedResult.getContent();
+                Log.e("TPush", "content:" + content);
             }
         }
 
+
     }
+
+    void showDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setMessage("还没有登录？");
+        builder.setTitle("提示");
+        builder.setPositiveButton("退出", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                MainActivity.this.finish();
+            }
+        });
+        builder.setNegativeButton("去登录", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.e("MainActivity", "未登录");
+                dialog.dismiss();
+                new Timer().schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        Intent intent = new Intent();
+                        ComponentName comp = new ComponentName("com.gg.myinformation", "com.gg.myinformation.LogOrRegActivity");
+                        intent.setComponent(comp);
+                        intent.putExtra("appName", "habitTrain");
+                        intent.setAction("intent.action.loginZ");
+                        startActivity(intent);
+                    }
+                }, 1500);
+
+            }
+        });
+        builder.create().show();
+    }
+
 
     @Override
     protected void onDestroy() {
